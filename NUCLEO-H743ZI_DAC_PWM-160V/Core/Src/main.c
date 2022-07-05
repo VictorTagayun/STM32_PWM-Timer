@@ -52,6 +52,7 @@ UART_HandleTypeDef huart3;
 // for 0V - 160V variable output PWM
 volatile uint16_t duty_cycle = 0;
 uint16_t duty_cycle_increase = 0;
+uint16_t duty_cycle_target = 0;
 
 // push button
 uint8_t button_pressed = 0;
@@ -133,20 +134,25 @@ int main(void)
 		HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_7);
 		HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_14);
 		HAL_Delay(50);
-		if (duty_cycle == 0)
+		if (button_pressed)
 		{
-			duty_cycle_increase = 1; //duty_cycle + 10; // div by 10; // div by 10
-			HAL_Delay(4000);
+			if (duty_cycle == 0)
+			{
+				duty_cycle_increase = 1; //duty_cycle + 10; // div by 10; // div by 10
+				HAL_Delay(4000);
+			}
+			if (duty_cycle == 1000)
+			{
+				duty_cycle_increase = 0;
+				HAL_Delay(4000);
+			}
+			if (duty_cycle_increase)
+				duty_cycle = duty_cycle + 1;
+			else
+				duty_cycle = duty_cycle - 1;
+			if (duty_cycle_target == duty_cycle)
+				button_pressed = 0;
 		}
-		if (duty_cycle == 1000)
-		{
-			duty_cycle_increase = 0;
-			HAL_Delay(4000);
-		}
-		if (duty_cycle_increase)
-			duty_cycle = duty_cycle + 1;
-		else
-			duty_cycle = duty_cycle - 1;
 
     /* USER CODE END WHILE */
 
@@ -455,6 +461,10 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 	 */
 
 	button_pressed = 1;
+	if (duty_cycle_increase)
+		duty_cycle_target += 5;
+	else
+		duty_cycle_target -= 5;
 
 }
 /* USER CODE END 4 */
